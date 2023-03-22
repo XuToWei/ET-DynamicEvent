@@ -29,7 +29,7 @@ public class Test_DynamicEvent:ADynamicEvent<TestEntity,DynamicEventType.Test>
 ```
 4.注册和反注册需要监听的实体
 
-- 1注册事件
+- 1注册实体
 ```csharp
 testEntity.AddComponent<DynamicEventComponent>();
 ```
@@ -38,7 +38,7 @@ testEntity.AddComponent<DynamicEventComponent>();
 DynamicEventWatcherComponent.Instance.Register(testEntity);
 ```
 
-- 2销毁事件：
+- 2销毁实体
 ```csharp
 testEntity.RemoveComponent<DynamicEventComponent>();
 ```
