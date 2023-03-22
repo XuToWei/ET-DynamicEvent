@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 
 namespace ET
 {
@@ -90,16 +89,16 @@ namespace ET
                         Entity entity = Root.Instance.Get(instanceId);
                         if (entity != null && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
                         {
-                            dynamicEvent.Handle(scene, entity, arg).Forget();
+                            dynamicEvent.Handle(scene, entity, arg).Coroutine();
                         }
                     }
                 }
             }
         }
 
-        public async UniTask PublishAsync<A>(Scene scene, A arg) where A : struct
+        public async ETTask PublishAsync<A>(Scene scene, A arg) where A : struct
         {
-            using ListComponent<UniTask> taskList = ListComponent<UniTask>.Create();
+            using ListComponent<ETTask> taskList = ListComponent<ETTask>.Create();
 
             SceneType domainSceneType = scene.SceneType;
 
@@ -126,7 +125,7 @@ namespace ET
 
             try
             {
-                await UniTask.WhenAll(taskList);
+                await ETTaskHelper.WaitAll(taskList);
             }
             catch (Exception e)
             {
