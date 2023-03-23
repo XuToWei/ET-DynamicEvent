@@ -56,3 +56,7 @@ DynamicEventWatcherComponent.Instance.Publish<DynamicEventType.Test>(scene, new 
 ```csharp
 await DynamicEventWatcherComponent.Instance.PublishAsync<DynamicEventType.Test>(scene, new DynamicEventType.Test())
 ```
+
+# TODO
+
+ - [ ] 优化筛选大量Entity的性能问题
