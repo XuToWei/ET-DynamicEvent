@@ -27,6 +27,7 @@ public class Test_DynamicEvent:ADynamicEvent<TestEntity,DynamicEventType.Test>
     }
 }
 ```
+
 4.注册和反注册需要监听的实体
 
 - 1注册实体
@@ -45,4 +46,13 @@ testEntity.RemoveComponent<DynamicEventComponent>();
 或
 ```csharp
 DynamicEventWatcherComponent.Instance.UnRegister(testEntity);
+```
+
+5.通知事件
+```csharp
+DynamicEventWatcherComponent.Instance.Publish<DynamicEventType.Test>(scene, new DynamicEventType.Test())
+```
+或
+```csharp
+await DynamicEventWatcherComponent.Instance.PublishAsync<DynamicEventType.Test>(scene, new DynamicEventType.Test())
 ```
