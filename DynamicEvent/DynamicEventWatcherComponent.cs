@@ -5,7 +5,7 @@ namespace ET
 {
     [EnableMethod]
     [ComponentOf(typeof(Scene))]
-    public class DynamicEventWatcherComponent : Entity, IAwake, IDestroy, ILoad
+    public class DynamicEventWatcherComponent : Entity, IAwake, IDestroy, ILoad, IUpdate
     {
         [StaticField] public static DynamicEventWatcherComponent Instance;
 
@@ -27,6 +27,7 @@ namespace ET
         private readonly Dictionary<Type, ListComponent<DynamicEventInfo>> allDynamicEventInfos;
 
         private readonly HashSet<long> registeredEntityIds = new HashSet<long>();
+        private readonly HashSet<long> needRemoveEntityIds = new HashSet<long>();
         
         public void Register(Entity component)
         {
@@ -40,18 +41,32 @@ namespace ET
 
         public void UnRegister(Entity component)
         {
-            this.registeredEntityIds.Remove(component.InstanceId);
+            this.needRemoveEntityIds.Add(component.InstanceId);
         }
         
         public void UnRegister(long instanceId)
         {
-            this.registeredEntityIds.Remove(instanceId);
+            this.needRemoveEntityIds.Add(instanceId);
         }
 
         internal void Clear()
         {
             this.allDynamicEventInfos.Clear();
             this.registeredEntityIds.Clear();
+            this.needRemoveEntityIds.Clear();
+        }
+        
+        internal void RemoveUnRegisteredEntityIds()
+        {
+            if (this.needRemoveEntityIds.Count < 1)
+            {
+                return;
+            }
+            foreach (var id in this.needRemoveEntityIds)
+            {
+                this.registeredEntityIds.Remove(id);
+            }
+            this.needRemoveEntityIds.Clear();
         }
 
         internal void Init()
@@ -169,6 +184,15 @@ namespace ET
             protected override void Load(DynamicEventWatcherComponent self)
             {
                 self.Init();
+            }
+        }
+        
+        [ObjectSystem]
+        public class DynamicEventWatcherUpdateSystem : UpdateSystem<DynamicEventWatcherComponent>
+        {
+            protected override void Update(DynamicEventWatcherComponent self)
+            {
+                self.RemoveUnRegisteredEntityIds();
             }
         }
     }
