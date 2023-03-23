@@ -39,7 +39,7 @@ testEntity.AddComponent<DynamicEventComponent>();
 DynamicEventWatcherComponent.Instance.Register(testEntity);
 ```
 
-- 2销毁实体
+- 2反注册实体
 ```csharp
 testEntity.RemoveComponent<DynamicEventComponent>();
 ```
