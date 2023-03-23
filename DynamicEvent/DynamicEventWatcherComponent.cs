@@ -108,7 +108,7 @@ namespace ET
                     foreach (long instanceId in this.registeredEntityIds)
                     {
                         Entity entity = Root.Instance.Get(instanceId);
-                        if (entity != null && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
+                        if (entity is { IsDisposed: false } && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
                         {
                             dynamicEvent.Handle(scene, entity, arg).Coroutine();
                         }
@@ -136,7 +136,7 @@ namespace ET
                     foreach (long instanceId in this.registeredEntityIds)
                     {
                         Entity entity = Root.Instance.Get(instanceId);
-                        if (entity != null && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
+                        if (entity is { IsDisposed: false } && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
                         {
                             taskList.Add(dynamicEvent.Handle(scene, entity, arg));
                         }
