@@ -51,6 +51,10 @@ namespace ET
 
         internal void Clear()
         {
+            foreach (var list in this.allDynamicEventInfos.Values)
+            {
+                list.Dispose();
+            }
             this.allDynamicEventInfos.Clear();
             this.registeredEntityIds.Clear();
             this.needRemoveEntityIds.Clear();
@@ -71,6 +75,10 @@ namespace ET
 
         internal void Init()
         {
+            foreach (var list in this.allDynamicEventInfos.Values)
+            {
+                list.Dispose();
+            }
             this.allDynamicEventInfos.Clear();
             HashSet<Type> types = EventSystem.Instance.GetTypes(typeof(DynamicEventAttribute));
             foreach (Type type in types)
@@ -84,7 +92,7 @@ namespace ET
                     DynamicEventInfo dynamicEventInfo = new DynamicEventInfo(dynamicEventAttribute.SceneType, obj);
                     if (!this.allDynamicEventInfos.TryGetValue(dynamicEventInfo.DynamicEvent.ArgType, out ListComponent<DynamicEventInfo> dynamicEventInfos))
                     {
-                        dynamicEventInfos = new ListComponent<DynamicEventInfo>();
+                        dynamicEventInfos = ListComponent<DynamicEventInfo>.Create();
                         this.allDynamicEventInfos.Add(dynamicEventInfo.DynamicEvent.ArgType, dynamicEventInfos);
                     }
                     dynamicEventInfos.Add(dynamicEventInfo);
