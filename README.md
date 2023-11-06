@@ -1,5 +1,5 @@
 # ET-DynamicEvent
-ET的动态事件扩展
+ET8.0的动态事件扩展
 
 ## 优点：
 
@@ -11,9 +11,9 @@ ET的动态事件扩展
 
 1.将DynamicEvent目录放入ET的Codes/Model/Share/Module目录下
 
-2.给Scene添加DynamicEventWatcherComponent
+2.添加DynamicEventSystem
 ```csharp
-Root.Instance.Scene.AddComponent<DynamicEventWatcherComponent>();
+World.Instance.AddSingleton<DynamicEventSystem>();
 ```
 
 3.定义事件处理类
@@ -36,7 +36,7 @@ testEntity.AddComponent<DynamicEventComponent>();
 ```
 或
 ```csharp
-DynamicEventWatcherComponent.Instance.Register(testEntity);
+DynamicEventSystem.Instance.Register(testEntity);
 ```
 
 - 2反注册实体
@@ -45,16 +45,16 @@ testEntity.RemoveComponent<DynamicEventComponent>();
 ```
 或
 ```csharp
-DynamicEventWatcherComponent.Instance.UnRegister(testEntity);
+DynamicEventSystem.Instance.UnRegister(testEntity);
 ```
 
 5.通知事件
 ```csharp
-DynamicEventWatcherComponent.Instance.Publish<DynamicEventType.Test>(scene, new DynamicEventType.Test())
+DynamicEventSystem.Instance.Publish<DynamicEventType.Test>(scene, new DynamicEventType.Test())
 ```
 或
 ```csharp
-await DynamicEventWatcherComponent.Instance.PublishAsync<DynamicEventType.Test>(scene, new DynamicEventType.Test())
+await DynamicEventSystem.Instance.PublishAsync<DynamicEventType.Test>(scene, new DynamicEventType.Test())
 ```
 
 # TODO

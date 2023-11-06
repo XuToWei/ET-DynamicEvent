@@ -1,28 +1,24 @@
 namespace ET
 {
-    public static class DynamicEventComponentSystem
+    [EntitySystemOf(typeof(DynamicEventComponent))]
+    [FriendOf(typeof(DynamicEventComponent))]
+    public static partial class DynamicEventComponentSystem
     {
-        [ObjectSystem]
-        public class DynamicEventAwakeSystem: AwakeSystem<DynamicEventComponent>
+        [EntitySystem]
+        private static void Awake(this DynamicEventComponent self)
         {
-            protected override void Awake(DynamicEventComponent self)
-            {
-                DynamicEventWatcherComponent.Instance.Register(self.Parent);
-            }
+            DynamicEventSystem.Instance.RegisterEntity(self.Parent);
         }
 
-        [ObjectSystem]
-        public class DynamicEventDestroySystem : DestroySystem<DynamicEventComponent>
+        [EntitySystem]
+        private static void Destroy(this DynamicEventComponent self)
         {
-            protected override void Destroy(DynamicEventComponent self)
-            {
-                DynamicEventWatcherComponent.Instance.UnRegister(self.Parent);
-            }
+            DynamicEventSystem.Instance.UnRegisterEntity(self.Parent);
         }
     }
     
     [ComponentOf]
-    public sealed class DynamicEventComponent: Entity, IAwake, IDestroy
+    public sealed class DynamicEventComponent : Entity, IAwake, IDestroy
     {
         
     }
