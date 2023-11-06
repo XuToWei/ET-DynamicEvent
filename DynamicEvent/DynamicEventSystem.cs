@@ -77,7 +77,7 @@ namespace ET
                         tempQueue.Enqueue(entity);
                         if (dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
                         {
-                            dynamicEvent.Handle(scene, entity, arg).Forget();
+                            dynamicEvent.Handle(scene, entity, arg).Coroutine();
                         }
                     }
                 }
