@@ -108,7 +108,7 @@ namespace ET
             {
                 foreach (DynamicEventInfo dynamicEventInfo in dynamicEventInfos)
                 {
-                    if (dynamicEventInfo.SceneType != domainSceneType && dynamicEventInfo.SceneType != SceneType.None)
+                    if (!domainSceneType.HasSameFlag(dynamicEventInfo.SceneType))
                     {
                         continue;
                     }
@@ -136,7 +136,7 @@ namespace ET
             {
                 foreach (DynamicEventInfo dynamicEventInfo in dynamicEventInfos)
                 {
-                    if (dynamicEventInfo.SceneType != domainSceneType && dynamicEventInfo.SceneType != SceneType.None)
+                    if (!domainSceneType.HasSameFlag(dynamicEventInfo.SceneType))
                     {
                         continue;
                     }
