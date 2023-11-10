@@ -19,9 +19,9 @@ namespace ET
             {
                 return;
             }
-            foreach (var id in this.needRemoveEntities)
+            foreach (var entity in this.needRemoveEntities)
             {
-                this.registeredEntities.Remove(id);
+                this.registeredEntities.Remove(entity);
             }
             this.needRemoveEntities.Clear();
         }
