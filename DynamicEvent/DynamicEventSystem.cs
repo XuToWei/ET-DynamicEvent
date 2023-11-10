@@ -5,7 +5,7 @@ namespace ET
 {
     public sealed partial class DynamicEventSystem : Singleton<DynamicEventSystem>, ISingletonAwake
     {
-        private readonly HashSet<EntityRef<Entity>> registeredEntities = new HashSet<EntityRef<Entity>>();
+        private readonly Dictionary<Type, HashSet<EntityRef<Entity>>> registeredEntityDict = new Dictionary<Type, HashSet<EntityRef<Entity>>>();
         private readonly HashSet<EntityRef<Entity>> needRemoveEntities = new HashSet<EntityRef<Entity>>();
 
         public void Awake()
@@ -19,16 +19,26 @@ namespace ET
             {
                 return;
             }
-            foreach (var entity in this.needRemoveEntities)
+            foreach (Entity entity in this.needRemoveEntities)
             {
-                this.registeredEntities.Remove(entity);
+                if (this.registeredEntityDict.TryGetValue(entity.GetType(), out var entityRefs))
+                {
+                    entityRefs.Remove(entity);
+                    break;
+                }
             }
             this.needRemoveEntities.Clear();
         }
 
         public void RegisterEntity(Entity entity)
         {
-            this.registeredEntities.Add(entity);
+            Type entityType = entity.GetType();
+            if (!this.registeredEntityDict.TryGetValue(entityType, out var entityRefs))
+            {
+                entityRefs = new HashSet<EntityRef<Entity>>();
+                this.registeredEntityDict.Add(entityType, entityRefs);
+            }
+            entityRefs.Add(entity);
         }
 
         public void UnRegisterEntity(Entity entity)
@@ -49,11 +59,14 @@ namespace ET
                         continue;
                     }
                     IDynamicEvent<A> dynamicEvent = (IDynamicEvent<A>)dynamicEventInfo.DynamicEvent;
-                    foreach (Entity entity in this.registeredEntities)
+                    if (this.registeredEntityDict.TryGetValue(dynamicEvent.EntityType, out var entityRefs))
                     {
-                        if (entity is { IsDisposed: false } && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
+                        foreach (Entity entity in entityRefs)
                         {
-                            dynamicEvent.Handle(scene, entity, arg).Coroutine();
+                            if (entity is { IsDisposed: false })
+                            {
+                                dynamicEvent.Handle(scene, entity, arg).Coroutine();
+                            }
                         }
                     }
                 }
@@ -74,11 +87,14 @@ namespace ET
                         continue;
                     }
                     IDynamicEvent<A> dynamicEvent = (IDynamicEvent<A>)dynamicEventInfo.DynamicEvent;
-                    foreach (Entity entity in this.registeredEntities)
+                    if (this.registeredEntityDict.TryGetValue(dynamicEvent.EntityType, out var entityRefs))
                     {
-                        if (entity is { IsDisposed: false } && dynamicEventInfo.DynamicEvent.EntityType == entity.GetType())
+                        foreach (Entity entity in entityRefs)
                         {
-                            taskList.Add(dynamicEvent.Handle(scene, entity, arg));
+                            if (entity is { IsDisposed: false })
+                            {
+                                taskList.Add(dynamicEvent.Handle(scene, entity, arg));
+                            }
                         }
                     }
                 }
@@ -86,7 +102,7 @@ namespace ET
 
             try
             {
-                await ETTask.WaitAll(taskList);
+                await ETTaskHelper.WaitAll(taskList);
             }
             catch (Exception e)
             {

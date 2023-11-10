@@ -22,14 +22,4 @@ namespace ET
             DynamicEventSystem.Instance.Update();
         }
     }
-    
-    [Event(SceneType.Main)]
-    public class DynamicEventSystemUpdate_InitShare : AEvent<Scene, EntryEvent1>
-    {
-        protected override async ETTask Run(Scene scene, EntryEvent1 a)
-        {
-            scene.AddComponent<DynamicEventSystemUpdateComponent>();
-            await ETTask.CompletedTask;
-        }
-    }
 }

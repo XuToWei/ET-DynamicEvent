@@ -11,12 +11,7 @@ ET8.0的动态事件扩展
 
 1.将DynamicEvent目录放入ET的Codes/Model/Share/Module目录下
 
-2.添加DynamicEventSystem
-```csharp
-World.Instance.AddSingleton<DynamicEventSystem>();
-```
-
-3.定义事件处理类
+2.定义事件处理类
 ```csharp
 [DynamicEvent(SceneType.Client)]
 public class Test_DynamicEvent:ADynamicEvent<TestEntity,DynamicEventType.Test>
@@ -28,27 +23,19 @@ public class Test_DynamicEvent:ADynamicEvent<TestEntity,DynamicEventType.Test>
 }
 ```
 
-4.注册和反注册需要监听的实体
+3.注册和反注册需要监听的实体
 
 - 1注册实体
 ```csharp
 testEntity.AddComponent<DynamicEventComponent>();
-```
-或
-```csharp
-DynamicEventSystem.Instance.RegisterEntity(testEntity);
 ```
 
 - 2反注册实体
 ```csharp
 testEntity.RemoveComponent<DynamicEventComponent>();
 ```
-或
-```csharp
-DynamicEventSystem.Instance.UnRegisterEntity(testEntity);
-```
 
-5.通知事件
+4.通知事件
 ```csharp
 DynamicEventSystem.Instance.Publish<DynamicEventType.Test>(scene, new DynamicEventType.Test())
 ```
@@ -56,7 +43,3 @@ DynamicEventSystem.Instance.Publish<DynamicEventType.Test>(scene, new DynamicEve
 ```csharp
 await DynamicEventSystem.Instance.PublishAsync<DynamicEventType.Test>(scene, new DynamicEventType.Test())
 ```
-
-# TODO
-
- - [ ] 优化筛选大量Entity的性能问题
