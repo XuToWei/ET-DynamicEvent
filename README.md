@@ -14,9 +14,9 @@ ET8.0的动态事件扩展
 2.定义事件处理类
 ```csharp
 [DynamicEvent(SceneType.Client)]
-public class Test_DynamicEvent:ADynamicEvent<TestEntity,DynamicEventType.Test>
+public class Test_DynamicEvent: ADynamicEvent<TestEntity, DynamicEventType.Test>
 {
-    protected override async ETTask Run(Scene scene, TestEntity self,DynamicEventType.Test arg)
+    protected override async ETTask Run(TestEntity self, DynamicEventType.Test arg)
     {
         //to do something
     }
@@ -37,9 +37,9 @@ testEntity.RemoveComponent<DynamicEventComponent>();
 
 4.通知事件
 ```csharp
-DynamicEventSystem.Instance.Publish<DynamicEventType.Test>(scene, new DynamicEventType.Test())
+DynamicEventSystem.Instance.Publish<DynamicEventType.Test>(new DynamicEventType.Test());
 ```
 或
 ```csharp
-await DynamicEventSystem.Instance.PublishAsync<DynamicEventType.Test>(scene, new DynamicEventType.Test())
+await DynamicEventSystem.Instance.PublishAsync<DynamicEventType.Test>(new DynamicEventType.Test());
 ```
