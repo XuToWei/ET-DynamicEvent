@@ -48,32 +48,22 @@ namespace ET
 
         public void Publish<A>(A arg) where A : struct
         {
-            Publish(SceneType.All, arg);
+            Publish(0, arg);
         }
 
         public ETTask PublishAsync<A>(A arg) where A : struct
         {
-            return PublishAsync(SceneType.All, arg);
+            return PublishAsync(0, arg);
         }
 
-        public void Publish<A>(Scene scene, A arg) where A : struct
-        {
-            Publish(scene.SceneType, arg);
-        }
-
-        public ETTask PublishAsync<A>(Scene scene, A arg) where A : struct
-        {
-            return PublishAsync(scene.SceneType, arg);
-        }
-
-        public void Publish<A>(SceneType sceneType, A arg) where A : struct
+        public void Publish<A>(long type, A arg) where A : struct
         {
             Type argType = typeof(A);
             if (DynamicEventTypeSystem.Instance.AllEventInfos.TryGetValue(argType, out List<DynamicEventInfo> dynamicEventInfos))
             {
                 foreach (DynamicEventInfo dynamicEventInfo in dynamicEventInfos)
                 {
-                    if (!sceneType.HasSameFlag(dynamicEventInfo.SceneType))
+                    if (type != dynamicEventInfo.Type)
                     {
                         continue;
                     }
@@ -92,7 +82,7 @@ namespace ET
             }
         }
 
-        public async ETTask PublishAsync<A>(SceneType sceneType, A arg) where A : struct
+        public async ETTask PublishAsync<A>(long type, A arg) where A : struct
         {
             using ListComponent<ETTask> taskList = ListComponent<ETTask>.Create();
             Type argType = typeof(A);
@@ -100,7 +90,7 @@ namespace ET
             {
                 foreach (DynamicEventInfo dynamicEventInfo in dynamicEventInfos)
                 {
-                    if (!sceneType.HasSameFlag(dynamicEventInfo.SceneType))
+                    if (type != dynamicEventInfo.Type)
                     {
                         continue;
                     }
