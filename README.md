@@ -13,7 +13,7 @@ ET8.0的动态事件扩展
 
 2.定义事件处理类
 ```csharp
-[DynamicEvent(SceneType.Client)]
+[DynamicEvent]
 public class Test_DynamicEvent: ADynamicEvent<TestEntity, DynamicEventType.Test>
 {
     protected override async ETTask Run(TestEntity self, DynamicEventType.Test arg)

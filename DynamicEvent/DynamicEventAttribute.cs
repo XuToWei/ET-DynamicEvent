@@ -7,7 +7,7 @@ namespace ET
     {
         public long Type {get; }
 
-        public DynamicEventAttribute(long type)
+        public DynamicEventAttribute(long type = 0)
         {
             this.Type = type;
         }
