@@ -1,5 +1,6 @@
 namespace ET
 {
+    [EnableClass]
     [Event(SceneType.Main)]
     public class EntryEvent1_InitDynamicEvent : AEvent<Scene, EntryEvent1>
     {
