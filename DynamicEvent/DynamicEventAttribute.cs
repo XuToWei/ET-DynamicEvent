@@ -7,7 +7,7 @@ namespace ET
     {
         public SceneType SceneType {get; }
 
-        public DynamicEventAttribute(SceneType sceneType = SceneType.None)
+        public DynamicEventAttribute(SceneType sceneType = SceneType.All)
         {
             this.SceneType = sceneType;
         }
