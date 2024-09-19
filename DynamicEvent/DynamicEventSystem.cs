@@ -5,8 +5,8 @@ namespace ET
 {
     public sealed partial class DynamicEventSystem : Singleton<DynamicEventSystem>, ISingletonAwake
     {
-        private readonly Dictionary<Type, HashSet<EntityRef<Entity>>> registeredEntityDict = new Dictionary<Type, HashSet<EntityRef<Entity>>>();
-        private readonly HashSet<EntityRef<Entity>> needRemoveEntities = new HashSet<EntityRef<Entity>>();
+        private readonly Dictionary<Type, List<EntityRef<Entity>>> registeredEntityDict = new Dictionary<Type, List<EntityRef<Entity>>>();
+        private readonly List<EntityRef<Entity>> needRemoveEntities = new List<EntityRef<Entity>>();
 
         public void Awake()
         {
@@ -15,19 +15,26 @@ namespace ET
 
         public void Update()
         {
-            if (this.needRemoveEntities.Count < 1)
+            foreach (EntityRef<Entity> entityRef in this.needRemoveEntities)
             {
-                return;
-            }
-            foreach (Entity entity in this.needRemoveEntities)
-            {
-                if (this.registeredEntityDict.TryGetValue(entity.GetType(), out var entityRefs))
+                Entity entity = entityRef;
+                if (entity != null && this.registeredEntityDict.TryGetValue(entity.GetType(), out var entityRefs))
                 {
-                    entityRefs.Remove(entity);
-                    break;
+                    entityRefs.Remove(entityRef);
                 }
             }
             this.needRemoveEntities.Clear();
+            foreach (List<EntityRef<Entity>> entityRefs in this.registeredEntityDict.Values)
+            {
+                for (int i = entityRefs.Count; i >= 0; i--)
+                {
+                    Entity entity = entityRefs[i];
+                    if (entity == null)
+                    {
+                        entityRefs.RemoveAt(i);
+                    }
+                }
+            }
         }
 
         public void RegisterEntity(Entity entity)
@@ -35,15 +42,23 @@ namespace ET
             Type entityType = entity.GetType();
             if (!this.registeredEntityDict.TryGetValue(entityType, out var entityRefs))
             {
-                entityRefs = new HashSet<EntityRef<Entity>>();
+                entityRefs = new List<EntityRef<Entity>>();
                 this.registeredEntityDict.Add(entityType, entityRefs);
             }
-            entityRefs.Add(entity);
+            EntityRef<Entity> entityRef = entity;
+            if (!entityRefs.Contains(entityRef))
+            {
+                entityRefs.Add(entityRef);
+            }
         }
 
         public void UnRegisterEntity(Entity entity)
         {
-            this.needRemoveEntities.Add(entity);
+            EntityRef<Entity> entityRef = entity;
+            if (!this.needRemoveEntities.Contains(entityRef))
+            {
+                this.needRemoveEntities.Add(entityRef);
+            }
         }
 
         public void Publish<A>(A arg) where A : struct
@@ -82,7 +97,7 @@ namespace ET
                     {
                         foreach (Entity entity in entityRefs)
                         {
-                            if (entity is { IsDisposed: false })
+                            if (entity != null)
                             {
                                 dynamicEvent.Handle(entity, arg).Coroutine();
                             }
@@ -109,7 +124,7 @@ namespace ET
                     {
                         foreach (Entity entity in entityRefs)
                         {
-                            if (entity is { IsDisposed: false })
+                            if (entity != null)
                             {
                                 taskList.Add(dynamicEvent.Handle(entity, arg));
                             }
