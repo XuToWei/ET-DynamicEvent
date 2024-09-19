@@ -7,6 +7,9 @@ namespace ET
     {
         private readonly Dictionary<Type, List<EntityRef<Entity>>> registeredEntityDict = new Dictionary<Type, List<EntityRef<Entity>>>();
         private readonly List<EntityRef<Entity>> needRemoveEntities = new List<EntityRef<Entity>>();
+        //60s删除一次
+        private const int FULL_REMOVE_INTERVAL_TIME = 60 * 1000;
+        private long removeTime = 0;
 
         public void Awake()
         {
@@ -18,20 +21,24 @@ namespace ET
             foreach (EntityRef<Entity> entityRef in this.needRemoveEntities)
             {
                 Entity entity = entityRef;
-                if (entity != null && this.registeredEntityDict.TryGetValue(entity.GetType(), out var entityRefs))
+                if (entity != null && this.registeredEntityDict.TryGetValue(entity.GetType(), out List<EntityRef<Entity>> entityRefs))
                 {
                     entityRefs.Remove(entityRef);
                 }
             }
             this.needRemoveEntities.Clear();
-            foreach (List<EntityRef<Entity>> entityRefs in this.registeredEntityDict.Values)
+            if (TimeInfo.Instance.FrameTime - removeTime >= FULL_REMOVE_INTERVAL_TIME)
             {
-                for (int i = entityRefs.Count; i >= 0; i--)
+                removeTime = TimeInfo.Instance.FrameTime;
+                foreach (List<EntityRef<Entity>> entityRefs in this.registeredEntityDict.Values)
                 {
-                    Entity entity = entityRefs[i];
-                    if (entity == null)
+                    for (int i = entityRefs.Count - 1; i >= 0; i--)
                     {
-                        entityRefs.RemoveAt(i);
+                        Entity entity = entityRefs[i];
+                        if (entity == null)
+                        {
+                            entityRefs.RemoveAt(i);
+                        }
                     }
                 }
             }
@@ -40,7 +47,7 @@ namespace ET
         public void RegisterEntity(Entity entity)
         {
             Type entityType = entity.GetType();
-            if (!this.registeredEntityDict.TryGetValue(entityType, out var entityRefs))
+            if (!this.registeredEntityDict.TryGetValue(entityType, out List<EntityRef<Entity>> entityRefs))
             {
                 entityRefs = new List<EntityRef<Entity>>();
                 this.registeredEntityDict.Add(entityType, entityRefs);
@@ -86,6 +93,7 @@ namespace ET
             Type argType = typeof(A);
             if (DynamicEventTypeSystem.Instance.AllEventInfos.TryGetValue(argType, out List<DynamicEventInfo> dynamicEventInfos))
             {
+                using ListComponent<int> removeIndexList = ListComponent<int>.Create();
                 foreach (DynamicEventInfo dynamicEventInfo in dynamicEventInfos)
                 {
                     if (!sceneType.HasSameFlag(dynamicEventInfo.SceneType))
@@ -93,14 +101,24 @@ namespace ET
                         continue;
                     }
                     IDynamicEvent<A> dynamicEvent = (IDynamicEvent<A>)dynamicEventInfo.DynamicEvent;
-                    if (this.registeredEntityDict.TryGetValue(dynamicEvent.EntityType, out var entityRefs))
+                    if (this.registeredEntityDict.TryGetValue(dynamicEvent.EntityType, out List<EntityRef<Entity>> entityRefs))
                     {
-                        foreach (Entity entity in entityRefs)
+                        removeIndexList.Clear();
+                        for (int i = 0; i < entityRefs.Count; i++)
                         {
+                            Entity entity = entityRefs[i];
                             if (entity != null)
                             {
                                 dynamicEvent.Handle(entity, arg).Coroutine();
                             }
+                            else
+                            {
+                                removeIndexList.Add(i);
+                            }
+                        }
+                        for (int i = removeIndexList.Count - 1; i >= 0; i--)
+                        {
+                            entityRefs.RemoveAt(removeIndexList[i]);
                         }
                     }
                 }
@@ -113,6 +131,7 @@ namespace ET
             if (DynamicEventTypeSystem.Instance.AllEventInfos.TryGetValue(argType, out List<DynamicEventInfo> dynamicEventInfos))
             {
                 using ListComponent<ETTask> taskList = ListComponent<ETTask>.Create();
+                using ListComponent<int> removeIndexList = ListComponent<int>.Create();
                 foreach (DynamicEventInfo dynamicEventInfo in dynamicEventInfos)
                 {
                     if (!sceneType.HasSameFlag(dynamicEventInfo.SceneType))
@@ -120,14 +139,24 @@ namespace ET
                         continue;
                     }
                     IDynamicEvent<A> dynamicEvent = (IDynamicEvent<A>)dynamicEventInfo.DynamicEvent;
-                    if (this.registeredEntityDict.TryGetValue(dynamicEvent.EntityType, out var entityRefs))
+                    if (this.registeredEntityDict.TryGetValue(dynamicEvent.EntityType, out List<EntityRef<Entity>> entityRefs))
                     {
-                        foreach (Entity entity in entityRefs)
+                        removeIndexList.Clear();
+                        for (int i = 0; i < entityRefs.Count; i++)
                         {
+                            Entity entity = entityRefs[i];
                             if (entity != null)
                             {
                                 taskList.Add(dynamicEvent.Handle(entity, arg));
                             }
+                            else
+                            {
+                                removeIndexList.Add(i);
+                            }
+                        }
+                        for (int i = removeIndexList.Count - 1; i >= 0; i--)
+                        {
+                            entityRefs.RemoveAt(removeIndexList[i]);
                         }
                     }
                 }
