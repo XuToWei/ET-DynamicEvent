@@ -57,6 +57,7 @@ namespace ET
             {
                 entityRefs.Add(entityRef);
             }
+            this.needRemoveEntities.Remove(entityRef);
         }
 
         public void UnRegisterEntity(Entity entity)
