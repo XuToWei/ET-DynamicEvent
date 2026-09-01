@@ -64,12 +64,9 @@ namespace ET
 namespace ET.Client
 {
     [DynamicEvent(SceneType.Main)]
-    public sealed class RefreshPlayerLevel :
-        ADynamicEvent<Player, PlayerLevelChanged>
+    public sealed class RefreshPlayerLevel : ADynamicEvent<Player, PlayerLevelChanged>
     {
-        protected override ETTask Run(
-            Player self,
-            PlayerLevelChanged arg)
+        protected override ETTask Run(Player self, PlayerLevelChanged arg)
         {
             self.Level = arg.Level;
             return ETTask.CompletedTask;
@@ -99,10 +96,8 @@ player.AddComponent<DynamicEventReceiverComponent>();
 ### 不等待
 
 ```csharp
-DynamicEventComponent dynamicEventComponent =
-    scene.Root().GetComponent<DynamicEventComponent>();
-dynamicEventComponent.Publish(
-    new PlayerLevelChanged(10));
+DynamicEventComponent dynamicEventComponent = scene.Root().GetComponent<DynamicEventComponent>();
+dynamicEventComponent.Publish(new PlayerLevelChanged(10));
 ```
 
 `Publish` 会启动每个处理器的 `Handle` 任务，发布方法立即返回。适合相互独立、不影响后续流程的通知。
@@ -110,10 +105,8 @@ dynamicEventComponent.Publish(
 ### 等待全部处理完成
 
 ```csharp
-DynamicEventComponent dynamicEventComponent =
-    scene.Root().GetComponent<DynamicEventComponent>();
-await dynamicEventComponent.PublishAsync(
-    new PlayerLevelChanged(10));
+DynamicEventComponent dynamicEventComponent = scene.Root().GetComponent<DynamicEventComponent>();
+await dynamicEventComponent.PublishAsync(new PlayerLevelChanged(10));
 ```
 
 `PublishAsync` 收集任务并使用 `ETTaskHelper.WaitAll`。处理器之间仍并发执行，不保证顺序。
