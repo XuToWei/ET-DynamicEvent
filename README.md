@@ -94,17 +94,6 @@ player.AddComponent<DynamicEventReceiverComponent>();
 
 只有 Main Fiber 中、`Root()` 可取得该组件的实体才能使用此生命周期组件；其他 Fiber 当前未初始化 DynamicEvent。
 
-也可直接调用：
-
-```csharp
-DynamicEventComponent dynamicEventComponent =
-    player.Root().GetComponent<DynamicEventComponent>();
-dynamicEventComponent.RegisterEntity(player);
-dynamicEventComponent.UnRegisterEntity(player);
-```
-
-直接注册时，调用方必须保证反注册。重复注册会被去重。
-
 ## 4. 发布事件
 
 ### 不等待
@@ -113,11 +102,10 @@ dynamicEventComponent.UnRegisterEntity(player);
 DynamicEventComponent dynamicEventComponent =
     scene.Root().GetComponent<DynamicEventComponent>();
 dynamicEventComponent.Publish(
-    scene,
     new PlayerLevelChanged(10));
 ```
 
-`Publish` 对每个处理器调用 `Handle(...).Forget()`，发布方法立即返回。适合相互独立、不影响后续流程的通知。
+`Publish` 会启动每个处理器的 `Handle` 任务，发布方法立即返回。适合相互独立、不影响后续流程的通知。
 
 ### 等待全部处理完成
 
@@ -125,7 +113,6 @@ dynamicEventComponent.Publish(
 DynamicEventComponent dynamicEventComponent =
     scene.Root().GetComponent<DynamicEventComponent>();
 await dynamicEventComponent.PublishAsync(
-    scene,
     new PlayerLevelChanged(10));
 ```
 
@@ -135,11 +122,10 @@ await dynamicEventComponent.PublishAsync(
 
 | API | SceneType 来源 |
 | --- | --- |
-| `Publish(arg)` | `SceneType.All`，使用 Main Scene 的注册表 |
-| `Publish(scene, arg)` | `scene.SceneType` |
-| `Publish(sceneType, arg)` | 调用方显式传入，使用 Main Scene 的注册表 |
+| `Publish(arg)` | 使用 `DynamicEventComponent` 所在 Scene 的 `SceneType` |
+| `Publish(sceneType, arg)` | 调用方显式传入 `SceneType` |
 
-Async 版本提供相同三组重载。传入 Scene 时，系统会检查 Scene 与自身是否属于同一个 Fiber；跨 Fiber 通知必须使用 Actor 消息。
+Async 版本提供对应的两组重载。`Scene` 仅用于获取 `DynamicEventComponent`，不会作为参数传入发布方法；两组重载都使用 Main Scene 的注册表。
 
 ## 分发规则
 
@@ -161,11 +147,11 @@ Async 版本提供相同三组重载。传入 Scene 时，系统会检查 Scene 
 
 ## 清理机制
 
-反注册先加入当前 `DynamicEventComponent` 的待移除列表，在该组件下一次 `Update()` 中从类型列表删除。
+反注册由 `DynamicEventReceiverComponent` 的 `Destroy` 触发，先加入当前 `DynamicEventComponent` 的待移除列表，在该组件下一次 `Update()` 中从类型列表删除。
 
-`DynamicEventComponent` 还会在 Main Fiber 中每 60 秒扫描一次注册列表，清理因调用方遗漏反注册而失效的 EntityRef。发布过程中也会移除当前列表中发现的失效引用。
+`DynamicEventComponent` 还会在 Main Fiber 中每 60 秒扫描一次注册列表，清理实体未正常销毁组件而留下的失效 EntityRef。发布过程中也会移除当前列表中发现的失效引用。
 
-延迟清理可以避免在事件遍历期间删除集合元素；调用 `UnRegisterEntity` 到下一次 Update 之间实体仍可能在列表中，但 EntityRef 失效后不会真正调用处理器。
+延迟清理可以避免在事件遍历期间删除集合元素；组件销毁到下一次 Update 之间实体仍可能在列表中，但 EntityRef 失效后不会真正调用处理器。
 
 ## 热重载
 
