@@ -6,10 +6,7 @@ namespace ET
     {
         protected override async ETTask Run(Scene scene, EntryEvent1 a)
         {
-            if (DynamicEventSystem.Instance != null)
-                return;
-            World.Instance.AddSingleton<DynamicEventSystem>();
-            scene.AddComponent<DynamicEventSystemUpdateComponent>();
+            scene.AddComponent<DynamicEventComponent>();
             await ETTask.CompletedTask;
         }
     }
