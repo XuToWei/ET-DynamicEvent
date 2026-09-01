@@ -46,10 +46,8 @@ namespace ET
             }
         }
 
-        public static void RegisterEntity(this DynamicEventComponent self, Entity entity)
+        internal static void RegisterEntity(this DynamicEventComponent self, Entity entity)
         {
-            EnsureSameFiber(self, entity);
-
             Type entityType = entity.GetType();
             if (!self.RegisteredEntityDict.TryGetValue(entityType, out List<EntityRef<Entity>> entityRefs))
             {
@@ -66,10 +64,8 @@ namespace ET
             self.NeedRemoveEntities.Remove(entityRef);
         }
 
-        public static void UnRegisterEntity(this DynamicEventComponent self, Entity entity)
+        internal static void UnRegisterEntity(this DynamicEventComponent self, Entity entity)
         {
-            EnsureSameFiber(self, entity);
-
             EntityRef<Entity> entityRef = entity;
             if (!self.NeedRemoveEntities.Contains(entityRef))
             {
@@ -79,24 +75,12 @@ namespace ET
 
         public static void Publish<A>(this DynamicEventComponent self, A arg) where A : struct
         {
-            self.Publish(SceneType.All, arg);
+            self.Publish(self.Scene().SceneType, arg);
         }
 
         public static ETTask PublishAsync<A>(this DynamicEventComponent self, A arg) where A : struct
         {
-            return self.PublishAsync(SceneType.All, arg);
-        }
-
-        public static void Publish<A>(this DynamicEventComponent self, Scene scene, A arg) where A : struct
-        {
-            EnsureSameFiber(self, scene);
-            self.Publish(scene.SceneType, arg);
-        }
-
-        public static ETTask PublishAsync<A>(this DynamicEventComponent self, Scene scene, A arg) where A : struct
-        {
-            EnsureSameFiber(self, scene);
-            return self.PublishAsync(scene.SceneType, arg);
+            return self.PublishAsync(self.Scene().SceneType, arg);
         }
 
         public static void Publish<A>(this DynamicEventComponent self, SceneType sceneType, A arg) where A : struct
@@ -200,27 +184,15 @@ namespace ET
             }
         }
 
-        private static void EnsureSameFiber(DynamicEventComponent self, Entity entity)
-        {
-            if (entity == null)
-            {
-                throw new ArgumentNullException(nameof(entity));
-            }
-
-            if (!ReferenceEquals(self.Fiber(), entity.Fiber()))
-            {
-                throw new InvalidOperationException($"DynamicEvent cannot cross Fiber: system={self.Fiber().Id}, entity={entity.Fiber().Id}");
-            }
-        }
     }
 
     [ComponentOf(typeof(Scene))]
     public sealed class DynamicEventComponent : Entity, IAwake, IUpdate
     {
-        public readonly Dictionary<Type, List<EntityRef<Entity>>> RegisteredEntityDict = new();
+        internal readonly Dictionary<Type, List<EntityRef<Entity>>> RegisteredEntityDict = new();
 
-        public readonly List<EntityRef<Entity>> NeedRemoveEntities = new();
+        internal readonly List<EntityRef<Entity>> NeedRemoveEntities = new();
 
-        public long RemoveTime;
+        internal long RemoveTime;
     }
 }
